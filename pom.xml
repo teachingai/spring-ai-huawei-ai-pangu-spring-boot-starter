@@ -50,10 +50,10 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 		<repository>
-		    <id>ossrh</id>
+			<id>ossrh</id>
 			<name>Maven Central Staging Repository</name>
-		    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		  </repository>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
 	</distributionManagement>
 
 	<repositories>
@@ -98,13 +98,13 @@
 								<rules>
 									<requireMavenVersion>
 										<message>
-	                                        <![CDATA[You are running an older version of Maven. This application requires at least Maven ${maven.version}.]]>
+											<![CDATA[You are running an older version of Maven. This application requires at least Maven ${maven.version}.]]>
 										</message>
 										<version>[${maven.version}.0,)</version>
 									</requireMavenVersion>
 									<requireJavaVersion>
 										<message>
-	                                        <![CDATA[You are running an older version of Java. This application requires at least JDK ${java.version}.]]>
+											<![CDATA[You are running an older version of Java. This application requires at least JDK ${java.version}.]]>
 										</message>
 										<version>[${java.version}.0,)</version>
 									</requireJavaVersion>
@@ -199,7 +199,6 @@
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>${maven-jar-plugin.version}</version>
 					<configuration>
-						<encoding>${project.build.sourceEncoding}</encoding>
 						<skipIfEmpty>true</skipIfEmpty>
 						<archive>
 							<manifest>
@@ -221,15 +220,6 @@
 						<encoding>${project.build.sourceEncoding}</encoding>
 						<docencoding>${project.build.sourceEncoding}</docencoding>
 					</configuration>
-					<executions>
-						<execution>
-							<id>attach-javadocs</id>
-							<phase>package</phase>
-							<goals>
-								<goal>jar</goal>
-							</goals>
-						</execution>
-					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.sonatype.plugins</groupId>
@@ -374,14 +364,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.version>3.0</maven.version>
-       	<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
-        <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
+		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
+		<maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
 		<maven-nexus-staging-plugin.version>1.6.8</maven-nexus-staging-plugin.version>
 		<java.version>17</java.version>
 		<spring-ai.version>0.8.1</spring-ai.version>
+		<pangu-kits.version>2.0.1</pangu-kits.version>
 	</properties>
 
 	<dependencyManagement>
@@ -397,6 +388,11 @@
 				<groupId>org.springframework.ai</groupId>
 				<artifactId>spring-ai-retry</artifactId>
 				<version>${spring-ai.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.huaweicloud</groupId>
+				<artifactId>pangu-kits-app-dev-java</artifactId>
+				<version>${pangu-kits.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -444,15 +440,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-retry</artifactId>
-		</dependency>
-		<!-- For Chat Completion  -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+			<artifactId>spring-ai-azure-openai-spring-boot-starter</artifactId>
 			<version>${spring-ai.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-retry</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.huaweicloud</groupId>
+			<artifactId>pangu-kits-app-dev-java</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
