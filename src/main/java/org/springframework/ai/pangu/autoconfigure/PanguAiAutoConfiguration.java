@@ -1,15 +1,15 @@
 package org.springframework.ai.pangu.autoconfigure;
 
-import com.baidubce.qianfan.Qianfan;
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLM;
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLMs;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
+import com.huaweicloud.pangu.dev.sdk.api.memory.cache.Caches;
 import org.springframework.ai.autoconfigure.mistralai.MistralAiEmbeddingProperties;
 import org.springframework.ai.autoconfigure.retry.SpringAiRetryAutoConfiguration;
 import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.model.function.FunctionCallbackContext;
-import org.springframework.ai.pangu.PanguAiChatClient;
-import org.springframework.ai.pangu.PanguAiEmbeddingClient;
+import org.springframework.ai.pangu.PanguAiPanguChatClient;
+import org.springframework.ai.pangu.PanguAiPanguEmbeddingClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,44 +27,43 @@ import java.util.List;
  * {@link AutoConfiguration Auto-configuration} for 百度千帆 Chat Client.
  */
 @AutoConfiguration(after = { RestClientAutoConfiguration.class, SpringAiRetryAutoConfiguration.class })
-@EnableConfigurationProperties({ QianfanAiChatProperties.class, QianfanAiConnectionProperties.class, QianfanAiEmbeddingProperties.class })
+@EnableConfigurationProperties({ PanguAiChatProperties.class, PanguAiConnectionProperties.class, PanguAiEmbeddingProperties.class })
 @ConditionalOnClass(LLMs.class)
-public class QianfanAiAutoConfiguration {
+public class PanguAiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LLM llm(QianfanAiConnectionProperties properties) {
-        //Assert.isNull(properties.getType(), "Qianfan Type must be set");
-        Assert.hasText(properties.getAccessKey(), "Qianfan API Access Key must be set");
-        Assert.hasText(properties.getSecretKey(), "Qianfan API Secret Key must be set");
+    public LLM llm(PanguAiConnectionProperties properties) {
+        //Assert.isNull(properties.getType(), "llm Type must be set");
+        Assert.hasText(properties.getAccessKey(), "llm API Access Key must be set");
+        Assert.hasText(properties.getSecretKey(), "llm API Secret Key must be set");
 
         LLMConfig llmConfig = new LLMConfig();
-        LLMs.PANGU.setConfig(llmConfig);
-        LLMs.of(LLMs.PANGU, llmConfig)
-        return new Qianfan(properties.getType().getValue(), properties.getAccessKey(), properties.getSecretKey())
-                .setRetryConfig(properties.getRetry())
-                .setRateLimitConfig(properties.getRateLimit());
+        LLM llm = LLMs.of(LLMs.PANGU, llmConfig);
+        llm.setCache(Caches.of(Caches.IN_MEMORY));
+
+        return llm;
     }
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = QianfanAiChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public PanguAiChatClient qianfanAiChatClient(Qianfan qianfan,
-                                                 QianfanAiChatProperties chatProperties,
-                                                 List<FunctionCallback> toolFunctionCallbacks,
-                                                 FunctionCallbackContext functionCallbackContext) {
+    @ConditionalOnProperty(prefix = PanguAiChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+    public PanguAiPanguChatClient panguAiChatClient(LLM llm,
+                                                    PanguAiChatProperties chatProperties,
+                                                    List<FunctionCallback> toolFunctionCallbacks,
+                                                    FunctionCallbackContext functionCallbackContext) {
         if (!CollectionUtils.isEmpty(toolFunctionCallbacks)) {
             chatProperties.getOptions().getFunctionCallbacks().addAll(toolFunctionCallbacks);
         }
-        return new PanguAiChatClient(qianfan, chatProperties.getOptions(), functionCallbackContext);
+        return new PanguAiPanguChatClient(llm, chatProperties.getOptions(), functionCallbackContext);
     }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = MistralAiEmbeddingProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public PanguAiEmbeddingClient qianfanAiEmbeddingClient(Qianfan qianfan, QianfanAiEmbeddingProperties embeddingProperties) {
+    public PanguAiPanguEmbeddingClient panguAiEmbeddingClient(LLM llm, PanguAiEmbeddingProperties embeddingProperties) {
 
-        return new PanguAiEmbeddingClient(qianfan, embeddingProperties.getMetadataMode(), embeddingProperties.getOptions());
+        return new PanguAiPanguEmbeddingClient(llm, embeddingProperties.getMetadataMode(), embeddingProperties.getOptions());
     }
 
     @Bean

@@ -1,14 +1,14 @@
 package org.springframework.ai.pangu.autoconfigure;
 
 import org.springframework.ai.document.MetadataMode;
-import org.springframework.ai.pangu.PanguAiEmbeddingOptions;
+import org.springframework.ai.pangu.PanguAiPanguEmbeddingOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-@ConfigurationProperties(QianfanAiEmbeddingProperties.CONFIG_PREFIX)
-public class QianfanAiEmbeddingProperties {
+@ConfigurationProperties(PanguAiEmbeddingProperties.CONFIG_PREFIX)
+public class PanguAiEmbeddingProperties {
 
-    public static final String CONFIG_PREFIX = "spring.ai.qianfan.embedding";
+    public static final String CONFIG_PREFIX = "spring.ai.llm.embedding";
 
     public static final String DEFAULT_EMBEDDING_MODEL = "embedding-v1";
 
@@ -25,15 +25,15 @@ public class QianfanAiEmbeddingProperties {
      * generative's defaults.
      */
     @NestedConfigurationProperty
-    private PanguAiEmbeddingOptions options = PanguAiEmbeddingOptions.builder()
+    private PanguAiPanguEmbeddingOptions options = PanguAiPanguEmbeddingOptions.builder()
             .withModel(DEFAULT_EMBEDDING_MODEL)
             .build();
 
-    public PanguAiEmbeddingOptions getOptions() {
+    public PanguAiPanguEmbeddingOptions getOptions() {
         return this.options;
     }
 
-    public void setOptions(PanguAiEmbeddingOptions options) {
+    public void setOptions(PanguAiPanguEmbeddingOptions options) {
         this.options = options;
     }
 

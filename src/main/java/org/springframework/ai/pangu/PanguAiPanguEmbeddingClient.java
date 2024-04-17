@@ -1,8 +1,8 @@
 package org.springframework.ai.pangu;
 
-import com.baidubce.qianfan.Qianfan;
-import com.baidubce.qianfan.model.embedding.EmbeddingData;
-import com.baidubce.qianfan.model.embedding.EmbeddingUsage;
+import com.huaweicloud.pangu.dev.sdk.api.llms.LLM;
+import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
+import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMParamConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
@@ -16,33 +16,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PanguAiEmbeddingClient extends AbstractEmbeddingClient {
+public class PanguAiPanguEmbeddingClient extends AbstractEmbeddingClient {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PanguAiEmbeddingOptions defaultOptions;
+    private final PanguAiPanguEmbeddingOptions defaultOptions;
 
     private final MetadataMode metadataMode;
 
     /**
      * Low-level 百度千帆 API library.
      */
-    private final Qianfan qianfan;
+    private final LLM llm;
 
-    public PanguAiEmbeddingClient(Qianfan qianfan) {
-        this(qianfan, MetadataMode.EMBED);
+    public PanguAiPanguEmbeddingClient(LLM llm) {
+        this(llm, MetadataMode.EMBED);
     }
 
-    public PanguAiEmbeddingClient(Qianfan qianfan, MetadataMode metadataMode) {
-        this(qianfan, metadataMode, PanguAiEmbeddingOptions.builder().build());
+    public PanguAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode) {
+        this(llm, metadataMode, PanguAiPanguEmbeddingOptions.builder().build());
     }
 
-    public PanguAiEmbeddingClient(Qianfan qianfan, MetadataMode metadataMode, PanguAiEmbeddingOptions options) {
-        Assert.notNull(qianfan, "Qianfan must not be null");
+    public PanguAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode, PanguAiPanguEmbeddingOptions options) {
+        Assert.notNull(llm, "llm must not be null");
         Assert.notNull(metadataMode, "metadataMode must not be null");
         Assert.notNull(options, "options must not be null");
 
-        this.qianfan = qianfan;
+        this.llm = llm;
         this.metadataMode = metadataMode;
         this.defaultOptions = options;
     }
@@ -60,8 +60,11 @@ public class PanguAiEmbeddingClient extends AbstractEmbeddingClient {
 
         logger.debug("Retrieving embeddings");
 
-        com.baidubce.qianfan.model.embedding.EmbeddingRequest embeddingRequest = this.toEmbeddingRequest(request);
-        com.baidubce.qianfan.model.embedding.EmbeddingResponse embeddingResponse = qianfan.embedding(embeddingRequest);
+        LLMConfig llmConfig =  LLMConfig.builder().llmParamConfig(LLMParamConfig.builder().temperature(0.9).build()).build();
+
+
+        com.baidubce.llm.model.embedding.EmbeddingRequest embeddingRequest = this.toEmbeddingRequest(request);
+        com.baidubce.llm.model.embedding.EmbeddingResponse embeddingResponse = llm.embedding(embeddingRequest);
         if (embeddingResponse == null) {
             logger.warn("No embeddings returned for request: {}", request);
             return new EmbeddingResponse(List.of());
@@ -71,22 +74,22 @@ public class PanguAiEmbeddingClient extends AbstractEmbeddingClient {
         return generateEmbeddingResponse(embeddingRequest.getModel(), embeddingResponse);
     }
 
-    com.baidubce.qianfan.model.embedding.EmbeddingRequest toEmbeddingRequest(EmbeddingRequest embeddingRequest) {
-        var qianfanRequest = new com.baidubce.qianfan.model.embedding.EmbeddingRequest();
-        qianfanRequest.setInput(embeddingRequest.getInstructions());
+    com.baidubce.llm.model.embedding.EmbeddingRequest toEmbeddingRequest(EmbeddingRequest embeddingRequest) {
+        var llmRequest = new com.baidubce.llm.model.embedding.EmbeddingRequest();
+        llmRequest.setInput(embeddingRequest.getInstructions());
         if (this.defaultOptions != null) {
-            qianfanRequest.setModel(this.defaultOptions.getModel());
-            //qianfanRequest.setUserId(this.defaultOptions.getUser());
-            //qianfanRequest.setExtraParameters(this.defaultOptions.getExtraParameters());
+            llmRequest.setModel(this.defaultOptions.getModel());
+            //llmRequest.setUserId(this.defaultOptions.getUser());
+            //llmRequest.setExtraParameters(this.defaultOptions.getExtraParameters());
         }
         if (embeddingRequest.getOptions() != null && !EmbeddingOptions.EMPTY.equals(embeddingRequest.getOptions())) {
-            qianfanRequest = ModelOptionsUtils.merge(embeddingRequest.getOptions(), qianfanRequest,
-                    com.baidubce.qianfan.model.embedding.EmbeddingRequest.class);
+            llmRequest = ModelOptionsUtils.merge(embeddingRequest.getOptions(), llmRequest,
+                    com.baidubce.llm.model.embedding.EmbeddingRequest.class);
         }
-        return qianfanRequest;
+        return llmRequest;
     }
 
-    private EmbeddingResponse generateEmbeddingResponse(String model, com.baidubce.qianfan.model.embedding.EmbeddingResponse embeddingResponse) {
+    private EmbeddingResponse generateEmbeddingResponse(String model, com.baidubce.llm.model.embedding.EmbeddingResponse embeddingResponse) {
         List<Embedding> data = generateEmbeddingList(embeddingResponse.getData());
         EmbeddingResponseMetadata metadata = generateMetadata(model, embeddingResponse.getUsage());
         return new EmbeddingResponse(data, metadata);

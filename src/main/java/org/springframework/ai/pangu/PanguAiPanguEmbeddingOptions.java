@@ -8,7 +8,7 @@ import org.springframework.ai.embedding.EmbeddingOptions;
 
 import java.util.Map;
 
-public class PanguAiEmbeddingOptions implements EmbeddingOptions {
+public class PanguAiPanguEmbeddingOptions implements EmbeddingOptions {
 
     /**
      * NOTE: Synthetic field not part of the official ZhiPuAi API.
@@ -32,10 +32,10 @@ public class PanguAiEmbeddingOptions implements EmbeddingOptions {
 
     public static class Builder {
 
-        protected PanguAiEmbeddingOptions options;
+        protected PanguAiPanguEmbeddingOptions options;
 
         public Builder() {
-            this.options = new PanguAiEmbeddingOptions();
+            this.options = new PanguAiPanguEmbeddingOptions();
         }
 
         public Builder withModel(String model) {
@@ -43,14 +43,14 @@ public class PanguAiEmbeddingOptions implements EmbeddingOptions {
             return this;
         }
 
-        public PanguAiEmbeddingOptions build() {
+        public PanguAiPanguEmbeddingOptions build() {
             return this.options;
         }
 
     }
 
     /**
-     * Convert the {@link PanguAiEmbeddingOptions} object to a {@link Map} of key/value pairs.
+     * Convert the {@link PanguAiPanguEmbeddingOptions} object to a {@link Map} of key/value pairs.
      * @return The {@link Map} of key/value pairs.
      */
     public Map<String, Object> toMap() {

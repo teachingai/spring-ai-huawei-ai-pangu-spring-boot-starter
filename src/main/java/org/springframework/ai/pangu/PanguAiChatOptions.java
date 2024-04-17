@@ -1,7 +1,7 @@
 package org.springframework.ai.pangu;
 
-import com.baidubce.qianfan.model.chat.Function;
-import com.baidubce.qianfan.model.chat.ToolChoice;
+import com.baidubce.llm.model.chat.Function;
+import com.baidubce.llm.model.chat.ToolChoice;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,13 +21,17 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
 
-    public static final Double DEFAULT_TEMPERATURE = 0.95D;
-
     /**
      * 所要调用的模型编码
      */
     @JsonProperty("model")
     private String model;
+
+    /**
+     * 指定模型最大输出token数
+     */
+    @JsonProperty("max_tokens")
+    private Integer maxTokens;
 
     /**
      * 采样温度，控制输出的随机性，必须为正数
@@ -36,7 +40,7 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
      * 较高的数值会使输出更加随机，而较低的数值会使其更加集中和确定，范围 (0, 1.0]，不能为0
      */
     @JsonProperty("temperature")
-    private Double temperature = DEFAULT_TEMPERATURE;
+    private Double temperature;
 
     /**
      * 用温度取样的另一种方法，称为核取样取值范围是：(0.0, 1.0) 开区间，不能等于 0 或 1，默认值为 0.7
@@ -84,16 +88,32 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
     private Boolean enableCitation;
 
     /**
-     * 指定模型最大输出token数
-     */
-    @JsonProperty("max_tokens")
-    private Integer maxTokens;
-
-    /**
      * 指定响应内容的格式
      */
     @JsonProperty(value = "responseFormat")
     private String responseFormat;
+
+
+    /**
+     * 存在惩罚，增加模型谈论新主题的可能性; 范围见具体模型API规范；
+     */
+    @JsonProperty(value = "presencePenalty")
+    private Double presencePenalty;
+    /**
+     * 频率惩罚，降低模型重复的可能性，提高文本多样性、创造型; 范围见具体模型API规范；
+     */
+    @JsonProperty(value = "frequencyPenalty")
+    private Double frequencyPenalty;
+    /**
+     * 指定响应内容的格式
+     */
+    @JsonProperty(value = "withPrompt")
+    private Boolean withPrompt;
+    /**
+     * 服务侧生成优选的回答数
+     */
+    @JsonProperty(value = "bestOf")
+    private Integer bestOf;
 
     /**
      * 一个可触发函数的描述列表

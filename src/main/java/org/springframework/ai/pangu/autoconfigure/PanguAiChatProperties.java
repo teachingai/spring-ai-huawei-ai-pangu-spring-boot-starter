@@ -4,10 +4,10 @@ import org.springframework.ai.pangu.PanguAiChatOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-@ConfigurationProperties(QianfanAiChatProperties.CONFIG_PREFIX)
-public class QianfanAiChatProperties {
+@ConfigurationProperties(PanguAiChatProperties.CONFIG_PREFIX)
+public class PanguAiChatProperties {
 
-    public static final String CONFIG_PREFIX = "spring.ai.qianfan.chat";
+    public static final String CONFIG_PREFIX = "spring.ai.llm.chat";
 
     public static final String DEFAULT_CHAT_MODEL = "ernie-4.0-8k";
 
