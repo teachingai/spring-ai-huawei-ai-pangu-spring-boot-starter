@@ -1,12 +1,12 @@
-package org.springframework.ai.pangu.autoconfigure;
+package org.springframework.ai.huaweiai.pangu.autoconfigure;
 
 import org.springframework.ai.document.MetadataMode;
-import org.springframework.ai.pangu.PanguAiPanguEmbeddingOptions;
+import org.springframework.ai.huaweiai.pangu.HuaweiAiPanguEmbeddingOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-@ConfigurationProperties(PanguAiEmbeddingProperties.CONFIG_PREFIX)
-public class PanguAiEmbeddingProperties {
+@ConfigurationProperties(HuaweiAiPanguEmbeddingProperties.CONFIG_PREFIX)
+public class HuaweiAiPanguEmbeddingProperties {
 
     public static final String CONFIG_PREFIX = "spring.ai.llm.embedding";
 
@@ -25,15 +25,15 @@ public class PanguAiEmbeddingProperties {
      * generative's defaults.
      */
     @NestedConfigurationProperty
-    private PanguAiPanguEmbeddingOptions options = PanguAiPanguEmbeddingOptions.builder()
+    private HuaweiAiPanguEmbeddingOptions options = HuaweiAiPanguEmbeddingOptions.builder()
             .withModel(DEFAULT_EMBEDDING_MODEL)
             .build();
 
-    public PanguAiPanguEmbeddingOptions getOptions() {
+    public HuaweiAiPanguEmbeddingOptions getOptions() {
         return this.options;
     }
 
-    public void setOptions(PanguAiPanguEmbeddingOptions options) {
+    public void setOptions(HuaweiAiPanguEmbeddingOptions options) {
         this.options = options;
     }
 

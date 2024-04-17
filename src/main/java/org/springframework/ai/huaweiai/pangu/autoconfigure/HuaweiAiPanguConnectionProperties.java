@@ -1,10 +1,10 @@
-package org.springframework.ai.pangu.autoconfigure;
+package org.springframework.ai.huaweiai.pangu.autoconfigure;
 
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLMs;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(PanguAiConnectionProperties.CONFIG_PREFIX)
-public class PanguAiConnectionProperties {
+@ConfigurationProperties(HuaweiAiPanguConnectionProperties.CONFIG_PREFIX)
+public class HuaweiAiPanguConnectionProperties {
 
     public static final String CONFIG_PREFIX = "spring.ai.llm";
 

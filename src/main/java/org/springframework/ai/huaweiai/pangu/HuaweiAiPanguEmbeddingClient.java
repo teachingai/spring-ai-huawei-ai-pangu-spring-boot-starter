@@ -1,4 +1,4 @@
-package org.springframework.ai.pangu;
+package org.springframework.ai.huaweiai.pangu;
 
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLM;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PanguAiPanguEmbeddingClient extends AbstractEmbeddingClient {
+public class HuaweiAiPanguEmbeddingClient extends AbstractEmbeddingClient {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PanguAiPanguEmbeddingOptions defaultOptions;
+    private final HuaweiAiPanguEmbeddingOptions defaultOptions;
 
     private final MetadataMode metadataMode;
 
@@ -29,15 +29,15 @@ public class PanguAiPanguEmbeddingClient extends AbstractEmbeddingClient {
      */
     private final LLM llm;
 
-    public PanguAiPanguEmbeddingClient(LLM llm) {
+    public HuaweiAiPanguEmbeddingClient(LLM llm) {
         this(llm, MetadataMode.EMBED);
     }
 
-    public PanguAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode) {
-        this(llm, metadataMode, PanguAiPanguEmbeddingOptions.builder().build());
+    public HuaweiAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode) {
+        this(llm, metadataMode, HuaweiAiPanguEmbeddingOptions.builder().build());
     }
 
-    public PanguAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode, PanguAiPanguEmbeddingOptions options) {
+    public HuaweiAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode, HuaweiAiPanguEmbeddingOptions options) {
         Assert.notNull(llm, "llm must not be null");
         Assert.notNull(metadataMode, "metadataMode must not be null");
         Assert.notNull(options, "options must not be null");

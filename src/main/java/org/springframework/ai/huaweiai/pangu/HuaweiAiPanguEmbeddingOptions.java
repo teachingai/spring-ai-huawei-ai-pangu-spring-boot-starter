@@ -1,4 +1,4 @@
-package org.springframework.ai.pangu;
+package org.springframework.ai.huaweiai.pangu;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,7 +8,7 @@ import org.springframework.ai.embedding.EmbeddingOptions;
 
 import java.util.Map;
 
-public class PanguAiPanguEmbeddingOptions implements EmbeddingOptions {
+public class HuaweiAiPanguEmbeddingOptions implements EmbeddingOptions {
 
     /**
      * NOTE: Synthetic field not part of the official ZhiPuAi API.
@@ -32,10 +32,10 @@ public class PanguAiPanguEmbeddingOptions implements EmbeddingOptions {
 
     public static class Builder {
 
-        protected PanguAiPanguEmbeddingOptions options;
+        protected HuaweiAiPanguEmbeddingOptions options;
 
         public Builder() {
-            this.options = new PanguAiPanguEmbeddingOptions();
+            this.options = new HuaweiAiPanguEmbeddingOptions();
         }
 
         public Builder withModel(String model) {
@@ -43,14 +43,14 @@ public class PanguAiPanguEmbeddingOptions implements EmbeddingOptions {
             return this;
         }
 
-        public PanguAiPanguEmbeddingOptions build() {
+        public HuaweiAiPanguEmbeddingOptions build() {
             return this.options;
         }
 
     }
 
     /**
-     * Convert the {@link PanguAiPanguEmbeddingOptions} object to a {@link Map} of key/value pairs.
+     * Convert the {@link HuaweiAiPanguEmbeddingOptions} object to a {@link Map} of key/value pairs.
      * @return The {@link Map} of key/value pairs.
      */
     public Map<String, Object> toMap() {

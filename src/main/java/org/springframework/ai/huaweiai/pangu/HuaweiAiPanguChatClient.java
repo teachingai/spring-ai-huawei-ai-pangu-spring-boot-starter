@@ -1,4 +1,4 @@
-package org.springframework.ai.pangu;
+package org.springframework.ai.huaweiai.pangu;
 
 import com.huaweicloud.pangu.dev.sdk.api.callback.StreamCallBack;
 import com.huaweicloud.pangu.dev.sdk.api.callback.StreamResult;
@@ -9,7 +9,10 @@ import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMParamConfig;
 import com.huaweicloud.pangu.dev.sdk.api.llms.request.ConversationMessage;
 import com.huaweicloud.pangu.dev.sdk.api.llms.request.Role;
 import com.huaweicloud.pangu.dev.sdk.api.llms.response.LLMResp;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatChoice;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatMessage;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatReq;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatClient;
@@ -33,15 +36,15 @@ import reactor.core.publisher.Flux;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PanguAiPanguChatClient
-        extends AbstractFunctionCallSupport<PanguChatMessage, ConversationMessage, ResponseEntity<LLMResp>>
+public class HuaweiAiPanguChatClient
+        extends AbstractFunctionCallSupport<PanguChatMessage, PanguChatReq, ResponseEntity<PanguChatResp>>
         implements ChatClient, StreamingChatClient {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     /**
      * Default options to be used for all chat requests.
      */
-    private PanguAiChatOptions defaultOptions;
+    private HuaweiAiPanguChatOptions defaultOptions;
     /**
      * 华为 盘古大模型 LLM library.
      */
@@ -49,19 +52,19 @@ public class PanguAiPanguChatClient
 
     private final RetryTemplate retryTemplate;
 
-    public PanguAiPanguChatClient(LLM llm) {
-        this(llm, PanguAiChatOptions.builder()
+    public HuaweiAiPanguChatClient(LLM llm) {
+        this(llm, HuaweiAiPanguChatOptions.builder()
                         .withTemperature(0.95f)
                         .withTopP(0.7f)
                         //.withModel(ZhipuAiApi.ChatModel.GLM_3_TURBO.getValue())
                         .build());
     }
 
-    public PanguAiPanguChatClient(LLM llm, PanguAiChatOptions options) {
+    public HuaweiAiPanguChatClient(LLM llm, HuaweiAiPanguChatOptions options) {
         this(llm, options, null, RetryUtils.DEFAULT_RETRY_TEMPLATE);
     }
 
-    public PanguAiPanguChatClient(LLM llm, PanguAiChatOptions options, FunctionCallbackContext functionCallbackContext, RetryTemplate retryTemplate) {
+    public HuaweiAiPanguChatClient(LLM llm, HuaweiAiPanguChatOptions options, FunctionCallbackContext functionCallbackContext, RetryTemplate retryTemplate) {
         super(functionCallbackContext);
         Assert.notNull(llm, "LLM must not be null");
         Assert.notNull(options, "Options must not be null");
@@ -76,10 +79,9 @@ public class PanguAiPanguChatClient
 
         var request = createRequest(prompt, false);
 
-
         return retryTemplate.execute(ctx -> {
 
-            ResponseEntity<ChatResponse> completionEntity = this.callWithFunctionSupport(request);
+            ResponseEntity<PanguChatResp> completionEntity = this.callWithFunctionSupport(request);
 
             var chatCompletion = completionEntity.getBody();
             if (chatCompletion == null) {
@@ -87,28 +89,51 @@ public class PanguAiPanguChatClient
                 return new ChatResponse(List.of());
             }
 
-            List<Generation> generations = chatCompletion.choices()
+            List<Generation> generations = chatCompletion.getChoices()
                     .stream()
-                    .map(choice -> new Generation(choice.message().content(), toMap(chatCompletion.id(), choice))
-                            .withGenerationMetadata(ChatGenerationMetadata.from(choice.finishReason().name(), null)))
+                    .map(choice -> new Generation(choice.getMessage().getContent(), toMap(chatCompletion.getId(), choice))
+                            .withGenerationMetadata(ChatGenerationMetadata.NULL))
                     .toList();
 
             return new ChatResponse(generations);
         });
     }
 
-    private Map<String, Object> toMap(String id, ChatResponse.Choice choice) {
+    private Map<String, Object> toMap(String id, PanguChatChoice choice) {
         Map<String, Object> map = new HashMap<>();
 
-        var message = choice.message();
-        if (message.role() != null) {
-            map.put("role", message.role().name());
+        var message = choice.getMessage();
+        if (message.getRole() != null) {
+            map.put("role", message.getRole());
         }
-        if (choice.finishReason() != null) {
-            map.put("finishReason", choice.finishReason().name());
-        }
+        map.put("finishReason", "");
         map.put("id", id);
         return map;
+    }
+
+    @Override
+    protected PanguChatReq doCreateToolResponseRequest(PanguChatReq previousRequest, PanguChatMessage responseMessage, List<PanguChatMessage> conversationHistory) {
+        return null;
+    }
+
+    @Override
+    protected List<PanguChatMessage> doGetUserMessages(PanguChatReq request) {
+        return null;
+    }
+
+    @Override
+    protected PanguChatMessage doGetToolResponseMessage(ResponseEntity<PanguChatResp> response) {
+        return null;
+    }
+
+    @Override
+    protected ResponseEntity<PanguChatResp> doChatCompletion(PanguChatReq request) {
+        return null;
+    }
+
+    @Override
+    protected boolean isToolFunctionCall(ResponseEntity<PanguChatResp> response) {
+        return false;
     }
 
     public class StreamCallBackImp implements StreamCallBack {
@@ -237,7 +262,7 @@ public class PanguAiPanguChatClient
     /**
      * Accessible for testing.
      */
-    ChatRequest createRequest(Prompt prompt, boolean stream) {
+    PanguChatReq createRequest(Prompt prompt, boolean stream) {
 
         Set<String> functionsForThisRequest = new HashSet<>();
 
@@ -261,7 +286,7 @@ public class PanguAiPanguChatClient
         if (prompt.getOptions() != null) {
             if (prompt.getOptions() instanceof ChatOptions runtimeOptions) {
                 var updatedRuntimeOptions = ModelOptionsUtils.copyToTarget(runtimeOptions, ChatOptions.class,
-                        PanguAiChatOptions.class);
+                        HuaweiAiPanguChatOptions.class);
 
                 Set<String> promptEnabledFunctions = this.handleFunctionCallbackConfigurations(updatedRuntimeOptions,
                         IS_RUNTIME_CALL);
@@ -280,7 +305,7 @@ public class PanguAiPanguChatClient
         if (!CollectionUtils.isEmpty(functionsForThisRequest)) {
 
             request = ModelOptionsUtils.merge(
-                    PanguAiChatOptions.builder().withTools(this.getFunctionTools(functionsForThisRequest)).build(),
+                    HuaweiAiPanguChatOptions.builder().withTools(this.getFunctionTools(functionsForThisRequest)).build(),
                     request, ChatRequest.class);
         }
 

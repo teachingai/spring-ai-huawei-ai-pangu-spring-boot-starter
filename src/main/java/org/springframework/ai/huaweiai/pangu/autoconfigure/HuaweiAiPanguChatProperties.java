@@ -1,11 +1,11 @@
-package org.springframework.ai.pangu.autoconfigure;
+package org.springframework.ai.huaweiai.pangu.autoconfigure;
 
-import org.springframework.ai.pangu.PanguAiChatOptions;
+import org.springframework.ai.huaweiai.pangu.HuaweiAiPanguChatOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-@ConfigurationProperties(PanguAiChatProperties.CONFIG_PREFIX)
-public class PanguAiChatProperties {
+@ConfigurationProperties(HuaweiAiPanguChatProperties.CONFIG_PREFIX)
+public class HuaweiAiPanguChatProperties {
 
     public static final String CONFIG_PREFIX = "spring.ai.llm.chat";
 
@@ -26,17 +26,17 @@ public class PanguAiChatProperties {
      * generative's defaults.
      */
     @NestedConfigurationProperty
-    private PanguAiChatOptions options = PanguAiChatOptions.builder()
+    private HuaweiAiPanguChatOptions options = HuaweiAiPanguChatOptions.builder()
             .withModel(DEFAULT_CHAT_MODEL)
             .withTemperature(DEFAULT_TEMPERATURE)
             .withTopP(DEFAULT_TOP_P)
             .build();
 
-    public PanguAiChatOptions getOptions() {
+    public HuaweiAiPanguChatOptions getOptions() {
         return this.options;
     }
 
-    public void setOptions(PanguAiChatOptions options) {
+    public void setOptions(HuaweiAiPanguChatOptions options) {
         this.options = options;
     }
 

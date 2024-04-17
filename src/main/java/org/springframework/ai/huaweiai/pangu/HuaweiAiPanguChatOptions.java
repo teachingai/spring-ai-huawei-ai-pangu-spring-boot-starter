@@ -1,4 +1,4 @@
-package org.springframework.ai.pangu;
+package org.springframework.ai.huaweiai.pangu;
 
 import com.baidubce.llm.model.chat.Function;
 import com.baidubce.llm.model.chat.ToolChoice;
@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
+public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOptions {
 
     /**
      * 所要调用的模型编码
@@ -153,7 +153,7 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
 
     public static class Builder {
 
-        private final PanguAiChatOptions options = new PanguAiChatOptions();
+        private final HuaweiAiPanguChatOptions options = new HuaweiAiPanguChatOptions();
 
         public Builder withModel(String model) {
             this.options.setModel(model);
@@ -185,7 +185,7 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
             return this;
         }
 
-        public PanguAiChatOptions build() {
+        public HuaweiAiPanguChatOptions build() {
             return this.options;
         }
 
@@ -261,7 +261,7 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
     }
 
     /**
-     * Convert the {@link PanguAiChatOptions} object to a {@link Map} of key/value pairs.
+     * Convert the {@link HuaweiAiPanguChatOptions} object to a {@link Map} of key/value pairs.
      * @return The {@link Map} of key/value pairs.
      */
     public Map<String, Object> toMap() {
@@ -276,11 +276,11 @@ public class PanguAiChatOptions implements FunctionCallingOptions, ChatOptions {
     }
 
     /**
-     * Helper factory method to create a new {@link PanguAiChatOptions} instance.
-     * @return A new {@link PanguAiChatOptions} instance.
+     * Helper factory method to create a new {@link HuaweiAiPanguChatOptions} instance.
+     * @return A new {@link HuaweiAiPanguChatOptions} instance.
      */
-    public static PanguAiChatOptions create() {
-        return new PanguAiChatOptions();
+    public static HuaweiAiPanguChatOptions create() {
+        return new HuaweiAiPanguChatOptions();
     }
 
     /**
