@@ -1,17 +1,24 @@
 package org.springframework.ai.huaweiai.pangu;
 
+import com.huaweicloud.pangu.dev.sdk.api.embedings.Embeddings;
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLM;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMParamConfig;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.PanguUsage;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbedding;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbeddingReq;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbeddingResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.*;
 import org.springframework.ai.model.ModelOptionsUtils;
+import org.springframework.ai.retry.RetryUtils;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,91 +34,119 @@ public class HuaweiAiPanguEmbeddingClient extends AbstractEmbeddingClient {
     /**
      * Low-level 百度千帆 API library.
      */
-    private final LLM llm;
+    private final com.huaweicloud.pangu.dev.sdk.api.embedings.Embedding embedder;
 
-    public HuaweiAiPanguEmbeddingClient(LLM llm) {
-        this(llm, MetadataMode.EMBED);
+    private final RetryTemplate retryTemplate;
+
+    public HuaweiAiPanguEmbeddingClient(com.huaweicloud.pangu.dev.sdk.api.embedings.Embedding embedder) {
+        this(embedder, MetadataMode.EMBED);
     }
 
-    public HuaweiAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode) {
-        this(llm, metadataMode, HuaweiAiPanguEmbeddingOptions.builder().build());
+    public HuaweiAiPanguEmbeddingClient(com.huaweicloud.pangu.dev.sdk.api.embedings.Embedding embedder, MetadataMode metadataMode) {
+        this(embedder, metadataMode, HuaweiAiPanguEmbeddingOptions.builder().build());
     }
 
-    public HuaweiAiPanguEmbeddingClient(LLM llm, MetadataMode metadataMode, HuaweiAiPanguEmbeddingOptions options) {
-        Assert.notNull(llm, "llm must not be null");
+    public HuaweiAiPanguEmbeddingClient(com.huaweicloud.pangu.dev.sdk.api.embedings.Embedding embedder, HuaweiAiPanguEmbeddingOptions options) {
+        this(embedder, MetadataMode.EMBED, options, RetryUtils.DEFAULT_RETRY_TEMPLATE);
+    }
+
+    public HuaweiAiPanguEmbeddingClient(com.huaweicloud.pangu.dev.sdk.api.embedings.Embedding embedder, MetadataMode metadataMode, HuaweiAiPanguEmbeddingOptions options, RetryTemplate retryTemplate) {
+        Assert.notNull(embedder, "embedder must not be null");
         Assert.notNull(metadataMode, "metadataMode must not be null");
         Assert.notNull(options, "options must not be null");
+        Assert.notNull(retryTemplate, "retryTemplate must not be null");
 
-        this.llm = llm;
+        this.embedder = embedder;
         this.metadataMode = metadataMode;
         this.defaultOptions = options;
+        this.retryTemplate = retryTemplate;
     }
 
     @Override
     public List<Double> embed(Document document) {
-        logger.debug("Retrieving embeddings");
-        EmbeddingResponse response = this.call(new EmbeddingRequest(List.of(document.getFormattedContent(this.metadataMode)), null));
-        logger.debug("Embeddings retrieved");
-        return response.getResults().stream().map(embedding -> embedding.getOutput()).flatMap(List::stream).toList();
+        return this.retryTemplate.execute(ctx -> {
+            logger.debug("Retrieving embeddings");
+            List<List<Float>> response = embedder.embedDocuments(List.of(document.getFormattedContent(this.metadataMode)));
+            logger.debug("Embeddings retrieved");
+            return response.stream().flatMap(List::stream).map(Float::doubleValue).toList();
+        });
     }
 
     @Override
     public EmbeddingResponse call(EmbeddingRequest request) {
+        return this.retryTemplate.execute(ctx -> {
 
-        logger.debug("Retrieving embeddings");
+            logger.debug("Retrieving embeddings");
 
-        LLMConfig llmConfig =  LLMConfig.builder().llmParamConfig(LLMParamConfig.builder().temperature(0.9).build()).build();
+            Assert.notEmpty(request.getInstructions(), "At least one text is required!");
+            if (request.getInstructions().size() != 1) {
+                logger.warn( "Moonshot AI Embedding does not support batch embedding. Will make multiple API calls to embed(Document)");
+            }
+            var inputContent = CollectionUtils.firstElement(request.getInstructions());
+            var apiRequest = (this.defaultOptions != null)
+                    ? new MoonshotAiApi.EmbeddingRequest(inputContent, this.defaultOptions.getModel())
+                    : new MoonshotAiApi.EmbeddingRequest(inputContent, MoonshotAiApi.EmbeddingModel.EMBED.getValue());
+
+            if (request.getOptions() != null && !EmbeddingOptions.EMPTY.equals(request.getOptions())) {
+                apiRequest = ModelOptionsUtils.merge(request.getOptions(), apiRequest, MoonshotAiApi.EmbeddingRequest.class);
+            }
+            LLMConfig llmConfig =  LLMConfig.builder().llmParamConfig(LLMParamConfig.builder().temperature(0.9).build()).build();
 
 
-        com.baidubce.llm.model.embedding.EmbeddingRequest embeddingRequest = this.toEmbeddingRequest(request);
-        com.baidubce.llm.model.embedding.EmbeddingResponse embeddingResponse = llm.embedding(embeddingRequest);
-        if (embeddingResponse == null) {
-            logger.warn("No embeddings returned for request: {}", request);
-            return new EmbeddingResponse(List.of());
-        }
+            List<Float> embedding = embedder.embedQuery(text);
+            var apiEmbeddingResponse = this.moonshotAiApi.embeddings(apiRequest).getBody();
 
-        logger.debug("Embeddings retrieved");
-        return generateEmbeddingResponse(embeddingRequest.getModel(), embeddingResponse);
+            if (CollectionUtils.isEmpty(embedding)) {
+                logger.warn("No embeddings returned for request: {}", request);
+                return new EmbeddingResponse(List.of());
+            }
+            logger.debug("Embeddings retrieved");
+            var metadata = generateResponseMetadata(apiEmbeddingResponse.model(), apiEmbeddingResponse.usage());
+
+            var embeddings = apiEmbeddingResponse.data()
+                    .stream()
+                    .map(e -> new Embedding(e.embedding(), e.index()))
+                    .toList();
+
+
+            return new EmbeddingResponse(embeddings, metadata);
+
+        });
     }
 
-    com.baidubce.llm.model.embedding.EmbeddingRequest toEmbeddingRequest(EmbeddingRequest embeddingRequest) {
-        var llmRequest = new com.baidubce.llm.model.embedding.EmbeddingRequest();
-        llmRequest.setInput(embeddingRequest.getInstructions());
-        if (this.defaultOptions != null) {
-            llmRequest.setModel(this.defaultOptions.getModel());
-            //llmRequest.setUserId(this.defaultOptions.getUser());
-            //llmRequest.setExtraParameters(this.defaultOptions.getExtraParameters());
-        }
+    private PanguEmbeddingReq toEmbeddingRequest(EmbeddingRequest embeddingRequest) {
+        var panguEmbeddingReq = PanguEmbeddingReq.builder().input(embeddingRequest.getInstructions()).build();
         if (embeddingRequest.getOptions() != null && !EmbeddingOptions.EMPTY.equals(embeddingRequest.getOptions())) {
-            llmRequest = ModelOptionsUtils.merge(embeddingRequest.getOptions(), llmRequest,
-                    com.baidubce.llm.model.embedding.EmbeddingRequest.class);
+            panguEmbeddingReq = ModelOptionsUtils.merge(embeddingRequest.getOptions(), panguEmbeddingReq,
+                    PanguEmbeddingReq.class);
         }
-        return llmRequest;
+        return panguEmbeddingReq;
     }
 
-    private EmbeddingResponse generateEmbeddingResponse(String model, com.baidubce.llm.model.embedding.EmbeddingResponse embeddingResponse) {
+    private EmbeddingResponse generateEmbeddingResponse(String model, PanguEmbeddingResp embeddingResponse) {
         List<Embedding> data = generateEmbeddingList(embeddingResponse.getData());
         EmbeddingResponseMetadata metadata = generateMetadata(model, embeddingResponse.getUsage());
         return new EmbeddingResponse(data, metadata);
     }
 
-    private List<Embedding> generateEmbeddingList(List<EmbeddingData> nativeData) {
+    private List<Embedding> generateEmbeddingList(List<PanguEmbedding> nativeData) {
         List<Embedding> data = new ArrayList<>();
-        for (EmbeddingData nativeDatum : nativeData) {
-            List<BigDecimal> nativeDatumEmbedding = nativeDatum.getEmbedding();
+        for (PanguEmbedding nativeDatum : nativeData) {
+            List<Float> nativeDatumEmbedding = nativeDatum.getEmbedding();
             int nativeIndex = nativeDatum.getIndex();
-            Embedding embedding = new Embedding(nativeDatumEmbedding.stream().map(BigDecimal::doubleValue).collect(Collectors.toList()), nativeIndex);
+            Embedding embedding = new Embedding(nativeDatumEmbedding.stream().map(Float::doubleValue).collect(Collectors.toList()), nativeIndex);
             data.add(embedding);
         }
         return data;
     }
 
-    private EmbeddingResponseMetadata generateMetadata(String model, EmbeddingUsage embeddingsUsage) {
+    private EmbeddingResponseMetadata generateMetadata(String model, PanguUsage embeddingsUsage) {
         EmbeddingResponseMetadata metadata = new EmbeddingResponseMetadata();
         // metadata.put("model", model);
         metadata.put("prompt-tokens", embeddingsUsage.getPromptTokens());
         metadata.put("total-tokens", embeddingsUsage.getTotalTokens());
         return metadata;
     }
+
 
 }

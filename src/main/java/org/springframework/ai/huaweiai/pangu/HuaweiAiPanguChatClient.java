@@ -10,9 +10,10 @@ import com.huaweicloud.pangu.dev.sdk.api.llms.request.ConversationMessage;
 import com.huaweicloud.pangu.dev.sdk.api.llms.request.Role;
 import com.huaweicloud.pangu.dev.sdk.api.llms.response.LLMResp;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatChoice;
-import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatMessage;
+import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.ConversationMessage;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatReq;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatResp;
+import com.huaweicloud.pangu.dev.sdk.llms.response.LLMRespPangu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatClient;
@@ -37,7 +38,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HuaweiAiPanguChatClient
-        extends AbstractFunctionCallSupport<PanguChatMessage, PanguChatReq, ResponseEntity<PanguChatResp>>
+        extends AbstractFunctionCallSupport<ConversationMessage, PanguChatReq, ResponseEntity<LLMRespPangu>>
         implements ChatClient, StreamingChatClient {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -112,17 +113,17 @@ public class HuaweiAiPanguChatClient
     }
 
     @Override
-    protected PanguChatReq doCreateToolResponseRequest(PanguChatReq previousRequest, PanguChatMessage responseMessage, List<PanguChatMessage> conversationHistory) {
+    protected PanguChatReq doCreateToolResponseRequest(PanguChatReq previousRequest, ConversationMessage responseMessage, List<ConversationMessage> conversationHistory) {
         return null;
     }
 
     @Override
-    protected List<PanguChatMessage> doGetUserMessages(PanguChatReq request) {
+    protected List<ConversationMessage> doGetUserMessages(PanguChatReq request) {
         return null;
     }
 
     @Override
-    protected PanguChatMessage doGetToolResponseMessage(ResponseEntity<PanguChatResp> response) {
+    protected ConversationMessage doGetToolResponseMessage(ResponseEntity<PanguChatResp> response) {
         return null;
     }
 
