@@ -4,8 +4,14 @@ Spring Boot Starter For Spring AI Implementation Base On Huawei Pangu
 
 ### 说明
 
-
  > 基于 Huawei 盘古大模型 和 Spring AI 的 Spring Boot Starter 实现
+
+- 官网地址：[https://www.huaweicloud.com/product/pangu.html](https://www.huaweicloud.com/product/pangu.html)
+
+### Huawei AI
+
+盘古大模型：解决行业难题，释放AI生产力
+
 
 ### Maven
 

@@ -17,6 +17,10 @@ public class HuaweiAiPanguEmbeddingOptions implements EmbeddingOptions {
     @JsonProperty("model")
     private String model;
 
+    @JsonProperty("user")
+    private String user;
+
+
     public void setModel(String model) {
         this.model = model;
     }
@@ -25,6 +29,13 @@ public class HuaweiAiPanguEmbeddingOptions implements EmbeddingOptions {
         return model;
     }
 
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
 
     public static Builder builder() {
         return new Builder();

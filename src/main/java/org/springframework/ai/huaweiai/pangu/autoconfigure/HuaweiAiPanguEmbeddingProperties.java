@@ -8,19 +8,19 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(HuaweiAiPanguEmbeddingProperties.CONFIG_PREFIX)
 public class HuaweiAiPanguEmbeddingProperties {
 
-    public static final String CONFIG_PREFIX = "spring.ai.llm.embedding";
+    public static final String CONFIG_PREFIX = "spring.ai.huaweiai.pangu.embedding";
 
     public static final String DEFAULT_EMBEDDING_MODEL = "embedding-v1";
 
     /**
-     * Enable 百度千帆 embedding client.
+     * Enable Huawei Pangu embedding client.
      */
     private boolean enabled = true;
 
     public MetadataMode metadataMode = MetadataMode.EMBED;
 
     /**
-     * Client lever 百度千帆 options. Use this property to configure generative temperature,
+     * Client lever Huawei Pangu options. Use this property to configure generative temperature,
      * topK and topP and alike parameters. The null values are ignored defaulting to the
      * generative's defaults.
      */

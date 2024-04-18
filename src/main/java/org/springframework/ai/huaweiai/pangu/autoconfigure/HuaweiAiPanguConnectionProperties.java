@@ -1,46 +1,50 @@
 package org.springframework.ai.huaweiai.pangu.autoconfigure;
 
-import com.huaweicloud.pangu.dev.sdk.api.llms.LLMs;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(HuaweiAiPanguConnectionProperties.CONFIG_PREFIX)
-public class HuaweiAiPanguConnectionProperties {
+public class HuaweiAiPanguConnectionProperties extends HuaweiAiParentProperties {
 
-    public static final String CONFIG_PREFIX = "spring.ai.llm";
+    public static final String CONFIG_PREFIX = "spring.ai.huaweiai.pangu";
 
-    private LLMName llmName = LLMName.PANGU;
-    private String accessKey;
-    private String secretKey;
+    private String moduleVersion;
+    private String systemPrompt;
+    private boolean enableAppendSystemMessage;
 
+    @NestedConfigurationProperty
+    private HuaweiAiPanguHttpProxyProperties httpProxy;
 
-    public String getAccessKey() {
-        return accessKey;
+    public String getModuleVersion() {
+        return moduleVersion;
     }
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
+    public void setModuleVersion(String moduleVersion) {
+        this.moduleVersion = moduleVersion;
     }
 
-    public String getSecretKey() {
-        return secretKey;
+    public String getSystemPrompt() {
+        return systemPrompt;
     }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
+    public void setSystemPrompt(String systemPrompt) {
+        this.systemPrompt = systemPrompt;
     }
 
-    public enum LLMName {
-        PANGU(LLMs.PANGU),
-        OPENAI(LLMs.OPENAI),
-        GALLERY(LLMs.OPENAI);
-
-        private String value;
-        LLMName(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
+    public boolean isEnableAppendSystemMessage() {
+        return enableAppendSystemMessage;
     }
+
+    public void setEnableAppendSystemMessage(boolean enableAppendSystemMessage) {
+        this.enableAppendSystemMessage = enableAppendSystemMessage;
+    }
+
+    public HuaweiAiPanguHttpProxyProperties getHttpProxy() {
+        return httpProxy;
+    }
+
+    public void setHttpProxy(HuaweiAiPanguHttpProxyProperties httpProxy) {
+        this.httpProxy = httpProxy;
+    }
+
 }

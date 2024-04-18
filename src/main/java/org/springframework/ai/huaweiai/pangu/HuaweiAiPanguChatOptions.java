@@ -1,7 +1,5 @@
 package org.springframework.ai.huaweiai.pangu;
 
-import com.baidubce.llm.model.chat.Function;
-import com.baidubce.llm.model.chat.ToolChoice;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,21 +9,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.model.function.FunctionCallingOptions;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOptions {
-
-    /**
-     * 所要调用的模型编码
-     */
-    @JsonProperty("model")
-    private String model;
 
     /**
      * 指定模型最大输出token数
@@ -40,7 +30,7 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
      * 较高的数值会使输出更加随机，而较低的数值会使其更加集中和确定，范围 (0, 1.0]，不能为0
      */
     @JsonProperty("temperature")
-    private Double temperature;
+    private Float temperature;
 
     /**
      * 用温度取样的另一种方法，称为核取样取值范围是：(0.0, 1.0) 开区间，不能等于 0 或 1，默认值为 0.7
@@ -49,7 +39,7 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
      * 建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
      */
     @JsonProperty("top_p")
-    private Double topP;
+    private Float topP;
 
     /**
      * 通过对已生成的token增加惩罚，减少重复生成的现象。说明：值越大表示惩罚越大，取值范围：[1.0, 2.0]
@@ -75,24 +65,8 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
     @JsonProperty("stop")
     private List<String> stop;
 
-    /**
-     * 是否强制关闭实时搜索功能
-     */
-    @JsonProperty(value = "user")
-    private Boolean disableSearch;
-
-    /**
-     * 是否开启上角标返回
-     */
-    @JsonProperty(value = "user")
-    private Boolean enableCitation;
-
-    /**
-     * 指定响应内容的格式
-     */
-    @JsonProperty(value = "responseFormat")
-    private String responseFormat;
-
+    @JsonProperty("answerNum")
+    private Integer answerNum;
 
     /**
      * 存在惩罚，增加模型谈论新主题的可能性; 范围见具体模型API规范；
@@ -114,18 +88,6 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
      */
     @JsonProperty(value = "bestOf")
     private Integer bestOf;
-
-    /**
-     * 一个可触发函数的描述列表
-     */
-    @NestedConfigurationProperty
-    private @JsonProperty("tools") List<Function> tools;
-
-    /**
-     * 在函数调用场景下，提示大模型选择指定的函数
-     */
-    @NestedConfigurationProperty
-    private @JsonProperty("tool_choice") ToolChoice toolChoice;
 
     @Override
     public List<FunctionCallback> getFunctionCallbacks() {
@@ -155,11 +117,6 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
 
         private final HuaweiAiPanguChatOptions options = new HuaweiAiPanguChatOptions();
 
-        public Builder withModel(String model) {
-            this.options.setModel(model);
-            return this;
-        }
-
         public Builder withMaxToken(Integer maxTokens) {
             this.options.setMaxTokens(maxTokens);
             return this;
@@ -175,13 +132,48 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
             return this;
         }
 
-        public Builder withTools(List<Function> tools) {
-            this.options.tools = tools;
+        public Builder withPenaltyScore(Double penaltyScore) {
+            this.options.setPenaltyScore(penaltyScore);
             return this;
         }
 
-        public Builder withToolChoice(ToolChoice toolChoice) {
-            this.options.toolChoice = toolChoice;
+        public Builder withSystem(String system) {
+            this.options.setSystem(system);
+            return this;
+        }
+
+        public Builder withUser(String user) {
+            this.options.setUser(user);
+            return this;
+        }
+
+        public Builder withStop(List<String> stop) {
+            this.options.setStop(stop);
+            return this;
+        }
+
+        public Builder withAnswerNum(Integer answerNum) {
+            this.options.setAnswerNum(answerNum);
+            return this;
+        }
+
+        public Builder withPresencePenalty(Double presencePenalty) {
+            this.options.setPresencePenalty(presencePenalty);
+            return this;
+        }
+
+        public Builder withFrequencyPenalty(Double frequencyPenalty) {
+            this.options.setFrequencyPenalty(frequencyPenalty);
+            return this;
+        }
+
+        public Builder withWithPrompt(Boolean withPrompt) {
+            this.options.setWithPrompt(withPrompt);
+            return this;
+        }
+
+        public Builder withBestOf(Integer bestOf) {
+            this.options.setBestOf(bestOf);
             return this;
         }
 
@@ -197,30 +189,6 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
 
     public void setMaxTokens(Integer maxTokens) {
         this.maxTokens = maxTokens;
-    }
-
-    public Boolean getDoSample() {
-        return doSample;
-    }
-
-    public void setDoSample(Boolean doSample) {
-        this.doSample = doSample;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public List<String> getStop() {
-        return stop;
-    }
-
-    public void setStop(List<String> stop) {
-        this.stop = stop;
     }
 
     @Override
@@ -241,6 +209,14 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
         this.topP = topP;
     }
 
+    public Integer getAnswerNum() {
+        return answerNum;
+    }
+
+    public void setAnswerNum(Integer answerNum) {
+        this.answerNum = answerNum;
+    }
+
     @Override
     @JsonIgnore
     public Integer getTopK() {
@@ -252,12 +228,68 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
         throw new UnsupportedOperationException("Unimplemented method 'setTopK'");
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public Double getPenaltyScore() {
+        return penaltyScore;
     }
 
-    public String getModel() {
-        return model;
+    public void setPenaltyScore(Double penaltyScore) {
+        this.penaltyScore = penaltyScore;
+    }
+
+    public String getSystem() {
+        return system;
+    }
+
+    public void setSystem(String system) {
+        this.system = system;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public List<String> getStop() {
+        return stop;
+    }
+
+    public void setStop(List<String> stop) {
+        this.stop = stop;
+    }
+
+    public Double getPresencePenalty() {
+        return presencePenalty;
+    }
+
+    public void setPresencePenalty(Double presencePenalty) {
+        this.presencePenalty = presencePenalty;
+    }
+
+    public Double getFrequencyPenalty() {
+        return frequencyPenalty;
+    }
+
+    public void setFrequencyPenalty(Double frequencyPenalty) {
+        this.frequencyPenalty = frequencyPenalty;
+    }
+
+    public Boolean getWithPrompt() {
+        return withPrompt;
+    }
+
+    public void setWithPrompt(Boolean withPrompt) {
+        this.withPrompt = withPrompt;
+    }
+
+    public Integer getBestOf() {
+        return bestOf;
+    }
+
+    public void setBestOf(Integer bestOf) {
+        this.bestOf = bestOf;
     }
 
     /**
@@ -274,25 +306,5 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * Helper factory method to create a new {@link HuaweiAiPanguChatOptions} instance.
-     * @return A new {@link HuaweiAiPanguChatOptions} instance.
-     */
-    public static HuaweiAiPanguChatOptions create() {
-        return new HuaweiAiPanguChatOptions();
-    }
-
-    /**
-     * Filter out the non supported fields from the options.
-     * @param options The options to filter.
-     * @return The filtered options.
-     */
-    public static Map<String, Object> filterNonSupportedFields(Map<String, Object> options) {
-        return options.entrySet().stream()
-                .filter(e -> !e.getKey().equals("model"))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
 
 }
