@@ -1,2 +1,2 @@
 org.springframework.aot.hint.RuntimeHintsRegistrar=\
-	aot.org.springframework.ai.huaweiai.pangu.PanguAiRuntimeHints
+	org.springframework.ai.huaweiai.pangu.aot.HuaweiAiPanguRuntimeHints
