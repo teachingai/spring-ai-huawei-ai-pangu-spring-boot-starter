@@ -157,7 +157,7 @@ public class HuaweiAiPanguCachedChatClient implements ChatClient, StreamingChatC
             }
 
             return Flux.just(toChatCompletion(panguChatResp)) ;
-        })
+        });
     }
 
     private ChatResponse toChatCompletion(LLMRespPangu chunk) {

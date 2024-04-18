@@ -117,7 +117,7 @@ public class HuaweiAiPanguChatClient implements ChatClient, StreamingChatClient 
                 return Flux.empty();
             }
             return Flux.just(toChatCompletion(panguChatResp)) ;
-        })
+        });
     }
 
     private ChatResponse toChatCompletion(PanguChatResp resp) {

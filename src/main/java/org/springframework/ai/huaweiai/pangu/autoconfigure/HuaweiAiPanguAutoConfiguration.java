@@ -44,7 +44,7 @@ public class HuaweiAiPanguAutoConfiguration {
                        HuaweiAiPanguIamProperties iamProperties) {
         LLMConfig llmConfig = new LLMConfig();
         llmConfig.setLlmModuleConfig(ApiUtils.toLLMModuleConfig(connectionProperties));
-        llmConfig.setLlmParamConfig(ApiUtils.toLLMParamConfig(chatProperties.getOptions());
+        llmConfig.setLlmParamConfig(ApiUtils.toLLMParamConfig(chatProperties.getOptions()));
         llmConfig.setIamConfig(ApiUtils.toIAMConfig(iamProperties));
         llmConfig.setHttpConfig(ApiUtils.toHTTPConfig(connectionProperties.getHttpProxy()));
         return llmConfig;
@@ -68,7 +68,7 @@ public class HuaweiAiPanguAutoConfiguration {
             chatProperties.getOptions().getFunctionCallbacks().addAll(toolFunctionCallbacks);
         }
         PanguClient panguClient = new PanguClient(llmConfig);
-        StreamCallBack streamCallBack = streamCallBackProvider.getIfAvailable(() -> ApiUtils.DEFAULT_STREAM_CALLBACK)
+        StreamCallBack streamCallBack = streamCallBackProvider.getIfAvailable(() -> ApiUtils.DEFAULT_STREAM_CALLBACK);
         RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
         return new HuaweiAiPanguChatClient(panguClient, streamCallBack, chatProperties.getOptions(), retryTemplate);
     }
@@ -88,7 +88,7 @@ public class HuaweiAiPanguAutoConfiguration {
         LLM llm = LLMs.of(LLMs.PANGU, llmConfig);
         // TODO 增加缓存配置
         //llm.setCache(Caches.of(Caches.IN_MEMORY));
-        StreamCallBack streamCallBack = streamCallBackProvider.getIfAvailable(() -> ApiUtils.DEFAULT_STREAM_CALLBACK)
+        StreamCallBack streamCallBack = streamCallBackProvider.getIfAvailable(() -> ApiUtils.DEFAULT_STREAM_CALLBACK);
         llm.setStreamCallback(streamCallBack);
         RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
         return new HuaweiAiPanguCachedChatClient((Pangu) llm, chatProperties.getOptions(), retryTemplate);
