@@ -5,11 +5,13 @@ import com.huaweicloud.pangu.dev.sdk.client.pangu.PanguUsage;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbedding;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbeddingReq;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.embedding.PanguEmbeddingResp;
+import com.huaweicloud.pangu.dev.sdk.exception.PanguDevSDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.*;
+import org.springframework.ai.huaweiai.pangu.util.LlmUtils;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.retry.support.RetryTemplate;
@@ -68,16 +70,20 @@ public class HuaweiAiPanguEmbeddingClient extends AbstractEmbeddingClient {
 
     @Override
     public EmbeddingResponse call(EmbeddingRequest request) {
+        Assert.notEmpty(request.getInstructions(), "At least one text is required!");
+        // execute the request
         return this.retryTemplate.execute(ctx -> {
             logger.debug("Retrieving embeddings");
-
-            Assert.notEmpty(request.getInstructions(), "At least one text is required!");
-            if (request.getInstructions().size() != 1) {
-                logger.warn( "Huawei AI Embedding does not support batch embedding. Will make multiple API calls to embed(Document)");
+            // Use tenant specific client if available.
+            PanguClient llmClient;
+            if(request.getOptions() != null && request.getOptions() instanceof HuaweiAiPanguEmbeddingTenantOptions embeddingOptions){
+                llmClient = LlmUtils.getOrCreatePanguClient(embeddingOptions)
+                        .orElseThrow(() -> new PanguDevSDKException("PanguClient initialization failed for Tenant Request."));
+            } else {
+                llmClient = this.panguClient;
             }
-
             var apiRequest = toEmbeddingRequest(request);
-            PanguEmbeddingResp apiEmbeddingResponse = panguClient.createEmbeddings(apiRequest);
+            PanguEmbeddingResp apiEmbeddingResponse = llmClient.createEmbeddings(apiRequest);
             if (Objects.isNull(apiEmbeddingResponse) || CollectionUtils.isEmpty(apiEmbeddingResponse.getData())){
                 logger.warn("No embeddings returned for request: {}", request);
                 return new EmbeddingResponse(List.of());

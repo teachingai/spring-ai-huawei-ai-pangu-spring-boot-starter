@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(HuaweiAiPanguChatProperties.CONFIG_PREFIX)
-public class HuaweiAiPanguChatProperties {
+public class HuaweiAiPanguChatProperties extends HuaweiAiParentProperties {
 
     public static final String CONFIG_PREFIX = "spring.ai.huaweiai.pangu.chat";
 

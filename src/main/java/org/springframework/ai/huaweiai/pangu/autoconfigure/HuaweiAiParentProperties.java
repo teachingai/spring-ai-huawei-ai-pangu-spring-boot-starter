@@ -8,16 +8,6 @@ class HuaweiAiParentProperties {
      */
     private String baseUrl;
 
-    private String apiKey;
-
-    public String getApiKey() {
-        return this.apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
     public String getBaseUrl() {
         return baseUrl;
     }

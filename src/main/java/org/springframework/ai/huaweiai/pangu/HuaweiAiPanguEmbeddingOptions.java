@@ -10,16 +10,11 @@ import java.util.Map;
 
 public class HuaweiAiPanguEmbeddingOptions implements EmbeddingOptions {
 
-    /**
-     * NOTE: Synthetic field not part of the official ZhiPuAi API.
-     * Used to allow overriding the model name with prompt options.
-     */
     @JsonProperty("model")
     private String model;
 
     @JsonProperty("user")
     private String user;
-
 
     public void setModel(String model) {
         this.model = model;
@@ -51,6 +46,11 @@ public class HuaweiAiPanguEmbeddingOptions implements EmbeddingOptions {
 
         public Builder withModel(String model) {
             this.options.setModel(model);
+            return this;
+        }
+
+        public Builder withUser(String user) {
+            this.options.setUser(user);
             return this;
         }
 

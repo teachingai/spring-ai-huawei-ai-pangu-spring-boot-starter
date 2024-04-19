@@ -1,22 +1,20 @@
 package org.springframework.ai.huaweiai.pangu;
 
-import com.huaweicloud.pangu.dev.sdk.api.callback.StreamCallBack;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.PanguClient;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatMessage;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatReq;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.chat.PanguChatResp;
+import com.huaweicloud.pangu.dev.sdk.exception.PanguDevSDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatClient;
 import org.springframework.ai.chat.ChatResponse;
-import org.springframework.ai.chat.Generation;
 import org.springframework.ai.chat.StreamingChatClient;
 import org.springframework.ai.chat.messages.MessageType;
-import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.huaweiai.pangu.metadata.HuaweiAiPanguChatResponseMetadata;
 import org.springframework.ai.huaweiai.pangu.util.ApiUtils;
+import org.springframework.ai.huaweiai.pangu.util.LlmUtils;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.retry.support.RetryTemplate;
@@ -34,13 +32,11 @@ public class HuaweiAiPanguChatClient implements ChatClient, StreamingChatClient 
     /**
      * Default options to be used for all chat requests.
      */
-    private HuaweiAiPanguChatOptions defaultOptions;
+    private final HuaweiAiPanguChatOptions defaultOptions;
     /**
      * 华为 盘古大模型 LLM library.
      */
     private final PanguClient panguClient;
-
-    private final StreamCallBack streamCallBack;
 
     private final RetryTemplate retryTemplate;
 
@@ -52,83 +48,74 @@ public class HuaweiAiPanguChatClient implements ChatClient, StreamingChatClient 
     }
 
     public HuaweiAiPanguChatClient(PanguClient panguClient, HuaweiAiPanguChatOptions options) {
-        this(panguClient, ApiUtils.DEFAULT_STREAM_CALLBACK, options);
-    }
-
-    public HuaweiAiPanguChatClient(PanguClient panguClient, StreamCallBack streamCallBack, HuaweiAiPanguChatOptions options) {
-        this(panguClient, streamCallBack, options, RetryUtils.DEFAULT_RETRY_TEMPLATE);
+        this(panguClient, options, RetryUtils.DEFAULT_RETRY_TEMPLATE);
     }
 
     public HuaweiAiPanguChatClient(PanguClient panguClient,
-                                   StreamCallBack streamCallBack,
                                    HuaweiAiPanguChatOptions options,
                                    RetryTemplate retryTemplate) {
         Assert.notNull(panguClient, "PanguClient must not be null");
-        Assert.notNull(streamCallBack, "StreamCallBack must not be null");
         Assert.notNull(options, "Options must not be null");
         Assert.notNull(retryTemplate, "RetryTemplate must not be null");
-        this.panguClient = panguClient;
-        this.streamCallBack = streamCallBack;
         this.defaultOptions = options;
+        this.panguClient = panguClient;
         this.retryTemplate = retryTemplate;
     }
 
     @Override
     public ChatResponse call(Prompt prompt) {
-        Assert.notEmpty(prompt.getInstructions(), "At least one text is required!");
+        // execute the request
         return retryTemplate.execute(ctx -> {
+            Assert.notEmpty(prompt.getInstructions(), "At least one text is required!");
+            // Use tenant specific client if available.
+            PanguClient llmClient;
+            if(prompt.getOptions() != null && prompt.getOptions() instanceof HuaweiAiPanguChatTenantOptions chatOptions){
+                llmClient = LlmUtils.getOrCreatePanguClient(chatOptions)
+                        .orElseThrow(() -> new PanguDevSDKException("PanguClient initialization failed for Tenant Request."));
+            } else {
+                llmClient = this.panguClient;
+            }
             // Ask the model.
             PanguChatResp panguChatResp;
             // If there is only one instruction, ask the model by prompt.
             if(prompt.getInstructions().size() == 1){
                 var inputContent = CollectionUtils.firstElement(prompt.getInstructions()).getContent();
-                panguChatResp = this.panguClient.createChat(inputContent);
+                panguChatResp = llmClient.createChat(inputContent);
             } else {
                 var request = createRequest(prompt, false);
-                panguChatResp = this.panguClient.createChat(request);
+                panguChatResp = llmClient.createChat(request);
             }
             if (panguChatResp == null) {
                 log.warn("No chat completion returned for prompt: {}", prompt);
                 return new ChatResponse(List.of());
             }
-            return this.toChatCompletion(panguChatResp) ;
+            return ApiUtils.toChatResponse(panguChatResp);
         });
     }
 
 
     @Override
     public Flux<ChatResponse> stream(Prompt prompt) {
-
-        Assert.notEmpty(prompt.getInstructions(), "At least one text is required!");
-
-        return retryTemplate.execute(ctx -> {
+        // execute the request
+        return retryTemplate.execute(ctx -> Flux.create(sink -> {
+            Assert.notEmpty(prompt.getInstructions(), "At least one text is required!");
+            // Use tenant specific client if available.
+            PanguClient llmClient;
+            if(prompt.getOptions() != null && prompt.getOptions() instanceof HuaweiAiPanguChatTenantOptions chatOptions){
+                llmClient = LlmUtils.getOrCreatePanguClient(chatOptions)
+                        .orElseThrow(() -> new PanguDevSDKException("PanguClient initialization failed for Tenant Request."));
+            } else {
+                llmClient = this.panguClient;
+            }
             // Ask the model.
-            PanguChatResp panguChatResp;
-            // If there is only one instruction, ask the model by prompt.
             if(prompt.getInstructions().size() == 1){
                 var inputContent = CollectionUtils.firstElement(prompt.getInstructions()).getContent();
-                panguChatResp = this.panguClient.createStreamChat(inputContent, streamCallBack);
+                llmClient.createStreamChat(inputContent, new HuaweiAiPanguStreamCallBack(sink));
             } else {
                 var request = createRequest(prompt, true);
-                panguChatResp = this.panguClient.createStreamChat(request, streamCallBack);
+                llmClient.createStreamChat(request, new HuaweiAiPanguStreamCallBack(sink));
             }
-            if (panguChatResp == null) {
-                log.warn("No chat completion returned for prompt: {}", prompt);
-                return Flux.empty();
-            }
-            return Flux.just(toChatCompletion(panguChatResp)) ;
-        });
-    }
-
-    private ChatResponse toChatCompletion(PanguChatResp resp) {
-
-        List<Generation> generations = resp.getChoices()
-                .stream()
-                .map(choice -> new Generation(choice.getMessage().getContent(), ApiUtils.toMap(resp.getId(), choice))
-                        .withGenerationMetadata(ChatGenerationMetadata.from("chat.completion", ApiUtils.extractUsage(resp))))
-                .toList();
-
-        return new ChatResponse(generations, HuaweiAiPanguChatResponseMetadata.from(resp));
+        }));
     }
 
     /**

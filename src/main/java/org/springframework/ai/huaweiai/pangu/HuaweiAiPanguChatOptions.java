@@ -7,15 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallingOptions;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOptions {
+public class HuaweiAiPanguChatOptions implements ChatOptions {
 
     /**
      * 指定模型最大输出token数
@@ -88,26 +85,11 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
      */
     @JsonProperty(value = "bestOf")
     private Integer bestOf;
-
-    @Override
-    public List<FunctionCallback> getFunctionCallbacks() {
-        return null;
-    }
-
-    @Override
-    public void setFunctionCallbacks(List<FunctionCallback> functionCallbacks) {
-
-    }
-
-    @Override
-    public Set<String> getFunctions() {
-        return null;
-    }
-
-    @Override
-    public void setFunctions(Set<String> functions) {
-
-    }
+    /**
+     * 是否开启流式处理
+     */
+    @JsonProperty(value = "stream")
+    private Boolean stream;
 
     public static Builder builder() {
         return new Builder();
@@ -174,6 +156,11 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
 
         public Builder withBestOf(Integer bestOf) {
             this.options.setBestOf(bestOf);
+            return this;
+        }
+
+        public Builder withStream(Boolean stream) {
+            this.options.setStream(stream);
             return this;
         }
 
@@ -290,6 +277,14 @@ public class HuaweiAiPanguChatOptions implements FunctionCallingOptions, ChatOpt
 
     public void setBestOf(Integer bestOf) {
         this.bestOf = bestOf;
+    }
+
+    public Boolean getStream() {
+        return stream;
+    }
+
+    public void setStream(Boolean stream) {
+        this.stream = stream;
     }
 
     /**

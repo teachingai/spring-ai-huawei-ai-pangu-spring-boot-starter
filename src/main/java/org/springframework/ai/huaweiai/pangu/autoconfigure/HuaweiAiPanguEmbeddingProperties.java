@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(HuaweiAiPanguEmbeddingProperties.CONFIG_PREFIX)
-public class HuaweiAiPanguEmbeddingProperties {
+public class HuaweiAiPanguEmbeddingProperties extends HuaweiAiParentProperties {
 
     public static final String CONFIG_PREFIX = "spring.ai.huaweiai.pangu.embedding";
 
