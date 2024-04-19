@@ -97,7 +97,7 @@ public class ApiUtils {
         if (Objects.isNull(iamProperties)) {
             return null;
         }
-        return IAMConfig.builder()
+        IAMConfig iamConfig = IAMConfig.builder()
                 .iamUrl(iamProperties.getUrl())
                 .iamDomain(iamProperties.getDomain())
                 .iamUser(iamProperties.getUser())
@@ -106,8 +106,11 @@ public class ApiUtils {
                 .disabled(iamProperties.getDisabled())
                 .ak(iamProperties.getAk())
                 .sk(iamProperties.getSk())
-                .httpConfig(ApiUtils.toHTTPConfig(iamProperties.getHttpProxy()))
                 .build();
+        if(Objects.nonNull(iamProperties.getHttpProxy())){
+            iamConfig.setHttpConfig(ApiUtils.toHTTPConfig(iamProperties.getHttpProxy()));
+        }
+        return iamConfig;
     }
 
     public static IAMConfig toIAMConfig(HuaweiAiPanguIamOptions iamOptions){
@@ -131,7 +134,7 @@ public class ApiUtils {
         }
         HTTPConfig httpConfig = HTTPConfig.builder()
                 .asyncHttpWaitSeconds(httpProxyOptions.getAsyncHttpWaitSeconds())
-                .proxyEnabled(httpProxyOptions.getProxyEnabled())
+                .proxyEnabled(Optional.ofNullable(httpProxyOptions.getProxyEnabled()).orElse(Boolean.FALSE))
                 .proxyUrl(httpProxyOptions.getProxyUrl())
                 .proxyUser(httpProxyOptions.getProxyUser())
                 .proxyPassword(httpProxyOptions.getProxyPassword())
@@ -145,7 +148,7 @@ public class ApiUtils {
         }
         HTTPConfig httpConfig = HTTPConfig.builder()
                 .asyncHttpWaitSeconds(proxyProperties.getAsyncHttpWaitSeconds())
-                .proxyEnabled(proxyProperties.getProxyEnabled())
+                .proxyEnabled(Optional.ofNullable(proxyProperties.getProxyEnabled()).orElse(Boolean.FALSE))
                 .proxyUrl(proxyProperties.getProxyUrl())
                 .proxyUser(proxyProperties.getProxyUser())
                 .proxyPassword(proxyProperties.getProxyPassword())
