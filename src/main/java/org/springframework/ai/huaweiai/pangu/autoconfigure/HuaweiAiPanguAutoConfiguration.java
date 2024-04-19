@@ -1,5 +1,6 @@
 package org.springframework.ai.huaweiai.pangu.autoconfigure;
 
+import com.huaweicloud.pangu.dev.sdk.api.embedings.Embeddings;
 import com.huaweicloud.pangu.dev.sdk.api.embedings.config.EmbeddingConfig;
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLMs;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
@@ -24,6 +25,8 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
  * {@link AutoConfiguration Auto-configuration} for Huawei Pangu Chat Client.
  */
@@ -39,11 +42,15 @@ public class HuaweiAiPanguAutoConfiguration {
                                HuaweiAiPanguChatProperties chatProperties,
                                HuaweiAiPanguIamProperties iamProperties) {
         LLMConfig llmConfig = LLMConfig.builder()
-                .httpConfig(ApiUtils.toHTTPConfig(connectionProperties.getHttpProxy()))
                 .iamConfig(ApiUtils.toIAMConfig(iamProperties))
-                .llmParamConfig(ApiUtils.toLLMParamConfig(chatProperties.getOptions()))
-                .llmModuleConfig(ApiUtils.toLLMModuleConfig(chatProperties, connectionProperties))
                 .build();
+        if(Objects.nonNull(connectionProperties.getHttpProxy())){
+            llmConfig.setHttpConfig(ApiUtils.toHTTPConfig(connectionProperties.getHttpProxy()));
+        }
+        if(Objects.nonNull(chatProperties.getOptions())){
+            llmConfig.setLlmParamConfig(ApiUtils.toLLMParamConfig(chatProperties.getOptions()));
+            llmConfig.setLlmModuleConfig(ApiUtils.toLLMModuleConfig(chatProperties, connectionProperties));
+        }
         return llmConfig;
     }
 
@@ -58,10 +65,12 @@ public class HuaweiAiPanguAutoConfiguration {
 
         EmbeddingConfig embeddingConfig = EmbeddingConfig.builder()
                 .url(baseUrl)
-                .embeddingName(embeddingProperties.getOptions().getModel())
+                .embeddingName(Objects.nonNull(embeddingProperties.getOptions()) ? embeddingProperties.getOptions().getModel() : Embeddings.PANGU)
                 .iamConfig(ApiUtils.toIAMConfig(iamProperties))
-                .httpConfig(ApiUtils.toHTTPConfig(connectionProperties.getHttpProxy()))
                 .build();
+        if(Objects.nonNull(connectionProperties.getHttpProxy())){
+            embeddingConfig.setHttpConfig(ApiUtils.toHTTPConfig(connectionProperties.getHttpProxy()));
+        }
         return embeddingConfig;
     }
 
