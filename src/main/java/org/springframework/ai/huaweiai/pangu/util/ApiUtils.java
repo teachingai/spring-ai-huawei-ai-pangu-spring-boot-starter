@@ -86,7 +86,7 @@ public class ApiUtils {
                 .topP(Objects.nonNull(options.getTopP()) ?  options.getTopP().doubleValue() : null)
                 .presencePenalty(options.getPresencePenalty())
                 .frequencyPenalty(options.getFrequencyPenalty())
-                .bestOf(options.getBestOf())
+                .bestOf(Objects.nonNull(options.getBestOf()) ? options.getBestOf() : 1)
                 .withPrompt(options.getWithPrompt())
                 .stream(Objects.nonNull(options.getStream()) ? options.getStream() : Boolean.FALSE)
                 .build();

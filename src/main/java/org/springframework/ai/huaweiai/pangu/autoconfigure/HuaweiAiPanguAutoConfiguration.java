@@ -5,7 +5,6 @@ import com.huaweicloud.pangu.dev.sdk.api.embedings.config.EmbeddingConfig;
 import com.huaweicloud.pangu.dev.sdk.api.llms.LLMs;
 import com.huaweicloud.pangu.dev.sdk.api.llms.config.LLMConfig;
 import com.huaweicloud.pangu.dev.sdk.client.pangu.PanguClient;
-import org.springframework.ai.autoconfigure.mistralai.MistralAiEmbeddingProperties;
 import org.springframework.ai.autoconfigure.retry.SpringAiRetryAutoConfiguration;
 import org.springframework.ai.huaweiai.pangu.HuaweiAiPanguCachedChatClient;
 import org.springframework.ai.huaweiai.pangu.HuaweiAiPanguChatClient;
@@ -38,6 +37,7 @@ public class HuaweiAiPanguAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = HuaweiAiPanguChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
     public LLMConfig llmConfig(HuaweiAiPanguConnectionProperties connectionProperties,
                                HuaweiAiPanguChatProperties chatProperties,
                                HuaweiAiPanguIamProperties iamProperties) {
@@ -56,6 +56,28 @@ public class HuaweiAiPanguAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = HuaweiAiPanguChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
+    public HuaweiAiPanguChatClient panguAiChatClient(LLMConfig llmConfig,
+                                                     HuaweiAiPanguChatProperties chatProperties,
+                                                     ObjectProvider<RetryTemplate> retryTemplateProvider) {
+        PanguClient panguClient = new PanguClient(llmConfig);
+        RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
+        return new HuaweiAiPanguChatClient(panguClient, chatProperties.getOptions(), retryTemplate);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = HuaweiAiPanguChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
+    public HuaweiAiPanguCachedChatClient panguAiCachedChatClient(LLMConfig llmConfig,
+                                                                 HuaweiAiPanguChatProperties chatProperties,
+                                                                 ObjectProvider<RetryTemplate> retryTemplateProvider) {
+        RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
+        return new HuaweiAiPanguCachedChatClient(llmConfig, chatProperties.getOptions(), retryTemplate);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = HuaweiAiPanguEmbeddingProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
     public EmbeddingConfig embeddingConfig(HuaweiAiPanguConnectionProperties connectionProperties,
                                            HuaweiAiPanguEmbeddingProperties embeddingProperties,
                                            HuaweiAiPanguIamProperties iamProperties) {
@@ -76,28 +98,7 @@ public class HuaweiAiPanguAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = HuaweiAiPanguChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public HuaweiAiPanguChatClient panguAiChatClient(LLMConfig llmConfig,
-                                                     HuaweiAiPanguChatProperties chatProperties,
-                                                     ObjectProvider<RetryTemplate> retryTemplateProvider) {
-        PanguClient panguClient = new PanguClient(llmConfig);
-        RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
-        return new HuaweiAiPanguChatClient(panguClient, chatProperties.getOptions(), retryTemplate);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = HuaweiAiPanguChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public HuaweiAiPanguCachedChatClient panguAiCachedChatClient(LLMConfig llmConfig,
-                                                                 HuaweiAiPanguChatProperties chatProperties,
-                                                                 ObjectProvider<RetryTemplate> retryTemplateProvider) {
-        RetryTemplate retryTemplate = retryTemplateProvider.getIfAvailable(() -> RetryTemplate.builder().build());
-        return new HuaweiAiPanguCachedChatClient(llmConfig, chatProperties.getOptions(), retryTemplate);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = MistralAiEmbeddingProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = HuaweiAiPanguEmbeddingProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
     public HuaweiAiPanguEmbeddingClient panguAiEmbeddingClient(EmbeddingConfig embeddingConfig,
                                                                HuaweiAiPanguEmbeddingProperties embeddingProperties,
                                                                ObjectProvider<RetryTemplate> retryTemplateProvider) {
