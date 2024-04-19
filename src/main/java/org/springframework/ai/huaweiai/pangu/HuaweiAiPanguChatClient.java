@@ -83,6 +83,15 @@ public class HuaweiAiPanguChatClient implements ChatClient, StreamingChatClient 
                 panguChatResp = llmClient.createChat(inputContent);
             } else {
                 var request = createRequest(prompt, false);
+
+                var chatCompletionMessages = prompt.getInstructions()
+                        .stream()
+                        .filter(message -> message.getMessageType() == MessageType.USER
+                                || message.getMessageType() == MessageType.ASSISTANT
+                                || message.getMessageType() == MessageType.SYSTEM)
+                        .map(m -> PanguChatMessage.builder().role(ApiUtils.toRole(m).getText()).content(m.getContent()).build())
+                        .toList();
+                llmClient.createChat(chatCompletionMessages);
                 panguChatResp = llmClient.createChat(request);
             }
             if (panguChatResp == null) {

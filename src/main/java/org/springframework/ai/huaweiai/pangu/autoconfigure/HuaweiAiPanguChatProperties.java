@@ -24,7 +24,6 @@ public class HuaweiAiPanguChatProperties extends HuaweiAiParentProperties {
     @NestedConfigurationProperty
     private HuaweiAiPanguChatOptions options = HuaweiAiPanguChatOptions.builder()
             .withTemperature(ApiUtils.DEFAULT_TEMPERATURE)
-            .withTopP(ApiUtils.DEFAULT_TOP_P)
             .build();
 
     public HuaweiAiPanguChatOptions getOptions() {

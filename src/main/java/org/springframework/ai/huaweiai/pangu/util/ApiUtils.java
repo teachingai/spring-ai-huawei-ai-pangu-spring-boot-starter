@@ -67,7 +67,7 @@ public class ApiUtils {
         Assert.hasText(baseUrl, "Huawei AI Pangu base URL must be set");
 
         LLMModuleConfig httpConfig = LLMModuleConfig.builder()
-                .LLMName(LLMs.PANGU)
+                //.LLMName(LLMs.PANGU)
                 .url(baseUrl)
                 .moduleVersion(connectionProperties.getModuleVersion())
                 .enableAppendSystemMessage(connectionProperties.isEnableAppendSystemMessage())
@@ -86,10 +86,12 @@ public class ApiUtils {
                 .topP(Objects.nonNull(options.getTopP()) ?  options.getTopP().doubleValue() : null)
                 .presencePenalty(options.getPresencePenalty())
                 .frequencyPenalty(options.getFrequencyPenalty())
-                .bestOf(Objects.nonNull(options.getBestOf()) ? options.getBestOf() : 1)
                 .withPrompt(options.getWithPrompt())
                 .stream(Objects.nonNull(options.getStream()) ? options.getStream() : Boolean.FALSE)
                 .build();
+        if(Objects.nonNull(options.getBestOf())){
+            llmParamConfig.setBestOf(options.getBestOf());
+        }
         return llmParamConfig;
     }
 
