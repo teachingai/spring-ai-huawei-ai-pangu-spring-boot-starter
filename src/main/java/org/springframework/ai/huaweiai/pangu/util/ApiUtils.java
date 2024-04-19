@@ -83,7 +83,7 @@ public class ApiUtils {
         LLMParamConfig llmParamConfig = LLMParamConfig.builder()
                 .maxTokens(options.getMaxTokens())
                 .temperature(Objects.nonNull(options.getTemperature()) ?  options.getTemperature().doubleValue() : null)
-                .topP(Objects.nonNull(options.getTopK()) ?  options.getTopK().doubleValue() : null)
+                .topP(Objects.nonNull(options.getTopP()) ?  options.getTopP().doubleValue() : null)
                 .presencePenalty(options.getPresencePenalty())
                 .frequencyPenalty(options.getFrequencyPenalty())
                 .bestOf(options.getBestOf())
