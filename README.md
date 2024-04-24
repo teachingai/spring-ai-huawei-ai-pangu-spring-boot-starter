@@ -42,7 +42,7 @@
 
 ``` xml
 <dependency>
-	<groupId>com.github.hiwepy</groupId>
+	<groupId>com.github.teachingai</groupId>
 	<artifactId>spring-ai-huawei-ai-pangu-spring-boot-starter</artifactId>
 	<version>${project.version}</version>
 </dependency>
