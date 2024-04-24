@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.github.hiwepy</groupId>
+	<groupId>com.github.teachingai</groupId>
 	<artifactId>spring-ai-huawei-ai-pangu-spring-boot-starter</artifactId>
 	<description>Spring Boot Starter For Spring AI Implementation Base On Huawei Pangu</description>
 	<version>1.0.0-SNAPSHOT</version>
