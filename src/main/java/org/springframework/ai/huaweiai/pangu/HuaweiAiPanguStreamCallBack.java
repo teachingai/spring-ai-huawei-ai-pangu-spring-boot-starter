@@ -40,8 +40,8 @@ public class HuaweiAiPanguStreamCallBack implements StreamCallBack {
 
     @Override
     public void onNewToken(String callBackId, LLMResp llmResp) {
-        log.info("StreamCallBack onNewToken: callBackId ----> {} || llmResp ----> {}", callBackId, llmResp);
-         sink.next(ApiUtils.toChatResponse(callBackId, llmResp, false));
+       log.info("StreamCallBack onNewToken: callBackId ----> {} || llmResp ----> {}", callBackId, llmResp);
+       sink.next(ApiUtils.toChatResponse(callBackId, llmResp, false));
     }
 
 }
